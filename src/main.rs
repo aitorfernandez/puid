@@ -1,10 +1,20 @@
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use std::process;
-use std::sync::atomic::{AtomicU16, Ordering};
+use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-static COUNTER: AtomicU16 = AtomicU16::new(0);
+static COUNTER: AtomicU8 = AtomicU8::new(0);
+
+fn format_radix(mut v: u64, radix: u64) -> String {
+    let mut result = vec![];
+    while v > 0 {
+        let m = v % radix;
+        v = v / radix;
+        result.push(std::char::from_digit(m as u32, radix as u32).unwrap());
+    }
+    result.into_iter().rev().collect()
+}
 
 fn rnd(elements: usize) -> String {
     thread_rng()
@@ -14,10 +24,10 @@ fn rnd(elements: usize) -> String {
         .collect()
 }
 
-fn counter() -> u16 {
+fn counter() -> u8 {
     COUNTER
         .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |i| match i {
-            i if i == u16::MAX - 1 => Some(0),
+            i if i == u8::MAX - 1 => Some(0),
             _ => Some(i + 1),
         })
         .unwrap()
@@ -30,30 +40,65 @@ fn time() -> u128 {
         .as_millis()
 }
 
-fn puid(prefix: &str, elements: usize) -> String {
+pub fn validate(pref: &str) -> bool {
+    match pref.chars().count() {
+        1 | 2 | 3 => pref.chars().all(|c| c.is_ascii_alphanumeric()),
+        _ => false,
+    }
+}
+
+fn puid(pref: &str, elements: usize) -> String {
+    assert!(
+        validate(pref),
+        "Prefix cannot be longer than 3 characters and non-alphanumeric characters"
+    );
+
+    // pref + 24 bytes = time 8 + counter 3 + process 4 + rand default 9
     format!(
-        "{}_{}_{:0>5}_{}_{}",
-        prefix,
-        time(),
+        "{}_{}_{:0>3}_{}_{}",
+        pref,
+        format_radix(time() as u64, 36),
         counter(),
-        process::id(),
+        format_radix(process::id() as u64, 36),
         rnd(elements)
     )
 }
 
 #[macro_export]
 macro_rules! puid {
-    ($prefix:expr) => {
-        $crate::puid($prefix, 12)
+    ($pref:expr) => {
+        $crate::puid($pref, 9)
     };
 
-    ($prefix:expr, $elements:expr) => {
-        $crate::puid($prefix, $elements)
+    ($pref:expr, $elements:expr) => {
+        $crate::puid($pref, $elements)
     };
 }
 
 fn main() {
     for _ in 0..10 {
-        println!("> {}", puid!("prefix"));
+        println!("> {}", puid!("pre"));
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn prefix_test() {
+        let tests = HashMap::from([
+            ("f", true),
+            ("fo", true),
+            ("foo", true),
+            ("b4r", true),
+            ("bäz", false),
+            ("", false),
+            ("quux", false),
+        ]);
+        for (pref, res) in tests {
+            assert_eq!(validate(pref), res);
+        }
     }
 }
