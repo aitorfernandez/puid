@@ -40,14 +40,14 @@ fn time() -> u128 {
         .as_millis()
 }
 
-pub fn validate(pref: &str) -> bool {
+fn validate(pref: &str) -> bool {
     match pref.chars().count() {
         1 | 2 | 3 => pref.chars().all(|c| c.is_ascii_alphanumeric()),
         _ => false,
     }
 }
 
-fn puid(pref: &str, elements: usize) -> String {
+pub fn puid(pref: &str, elements: usize) -> String {
     assert!(
         validate(pref),
         "Prefix cannot be longer than 3 characters and non-alphanumeric characters"
@@ -82,7 +82,7 @@ fn main() {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use std::collections::HashMap;
 
