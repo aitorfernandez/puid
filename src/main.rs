@@ -4,16 +4,16 @@ use std::process;
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+static BASE_36: u8 = 36;
 static COUNTER: AtomicU8 = AtomicU8::new(0);
 
-fn format_radix(mut v: u64, radix: u64) -> String {
-    let mut result = vec![];
+fn to_base36(mut v: u128) -> String {
+    let mut chars = vec![];
     while v > 0 {
-        let m = v % radix;
-        v = v / radix;
-        result.push(std::char::from_digit(m as u32, radix as u32).unwrap());
+        chars.push(char::from_digit((v % BASE_36 as u128) as u32, BASE_36 as u32).unwrap());
+        v /= BASE_36 as u128;
     }
-    result.into_iter().rev().collect()
+    chars.into_iter().rev().collect()
 }
 
 fn rnd(elements: usize) -> String {
@@ -57,9 +57,9 @@ pub fn puid(pref: &str, elements: usize) -> String {
     format!(
         "{}_{}_{:0>3}_{}_{}",
         pref,
-        format_radix(time() as u64, 36),
+        to_base36(time()),
         counter(),
-        format_radix(process::id() as u64, 36),
+        to_base36(process::id() as u128),
         rnd(elements)
     )
 }
