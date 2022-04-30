@@ -27,7 +27,7 @@ fn rnd_string(elements: usize) -> String {
 fn counter() -> u8 {
     COUNTER
         .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |i| match i {
-            i if i == u8::MAX - 1 => Some(0),
+            i if i == u8::MAX => Some(0),
             _ => Some(i + 1),
         })
         .unwrap()
@@ -83,14 +83,16 @@ mod tests {
     #[test]
     fn validate_test() {
         let tests = HashMap::from([
-            ("", ("f", true)),
-            ("", ("fo", true)),
-            ("", ("foo", true)),
-            ("", ("quux", true)),
-            ("", ("b4r", true)),
-            ("", ("bäz", false)),
-            ("", ("fo_o", false)),
-            ("", ("", false)),
+            ("Valid prefix for 1 character long", ("f", true)),
+            ("Valid prefix for 2 character long", ("fo", true)),
+            ("Valid prefix for 3 character long", ("foo", true)),
+            ("Valid prefix for 4 character long", ("quux", true)),
+            ("Valid prefix for alphanumeric characters", ("b4r", true)),
+            (
+                "Invalid prefix for non-alphanumeric characters",
+                ("bäz", false),
+            ),
+            ("Invalid prefix with empty value", ("", false)),
         ]);
         for (desc, t) in tests {
             assert_eq!(validate(t.0), t.1, "{}", desc);
@@ -100,5 +102,21 @@ mod tests {
     #[test]
     fn rnd_string_test() {
         assert_eq!(rnd_string(12).len(), 12);
+    }
+
+    #[test]
+    fn to_base36_test() {
+        assert_eq!(to_base36(1651312057), "rb5cjd");
+    }
+
+    #[test]
+    fn counter_test() {
+        let a = counter(); // 0
+        let b = counter();
+        for _ in b + 1..=u8::MAX {
+            let _ = counter();
+        }
+        assert!(a + 1 == b);
+        assert_eq!(counter(), 0);
     }
 }
