@@ -42,7 +42,7 @@ fn time() -> u128 {
 
 fn validate(pref: &str) -> bool {
     match pref.chars().count() {
-        1 | 2 | 3 => pref.chars().all(|c| c.is_ascii_alphanumeric()),
+        1..=4 => pref.chars().all(|c| c.is_ascii_alphanumeric()),
         _ => false,
     }
 }
@@ -50,7 +50,7 @@ fn validate(pref: &str) -> bool {
 pub fn puid(pref: &str, elements: usize) -> String {
     assert!(
         validate(pref),
-        "Prefix cannot be longer than 3 characters and non-alphanumeric characters"
+        "Prefix cannot be longer than 4 characters and with non-alphanumeric characters"
     );
 
     [
@@ -75,10 +75,6 @@ macro_rules! puid {
     };
 }
 
-fn main() {
-    println!("> {}", puid!("pre"));
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -87,16 +83,17 @@ mod tests {
     #[test]
     fn validate_test() {
         let tests = HashMap::from([
-            ("f", true),
-            ("fo", true),
-            ("foo", true),
-            ("b4r", true),
-            ("bäz", false),
-            ("", false),
-            ("quux", false),
+            ("", ("f", true)),
+            ("", ("fo", true)),
+            ("", ("foo", true)),
+            ("", ("quux", true)),
+            ("", ("b4r", true)),
+            ("", ("bäz", false)),
+            ("", ("fo_o", false)),
+            ("", ("", false)),
         ]);
-        for (pref, res) in tests {
-            assert_eq!(validate(pref), res);
+        for (desc, t) in tests {
+            assert_eq!(validate(t.0), t.1, "{}", desc);
         }
     }
 
