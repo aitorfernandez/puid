@@ -1,7 +1,15 @@
 [package]
 name = "puid"
 version = "0.1.0"
+authors = ["Aitor Fernandez <helloimaitor@gmail.com>"]
+description="A unique ID generator with 'ch_'-style prefix"
+documentation = "https://docs.rs/puid"
 edition = "2021"
+homepage = "https://github.com/aitorfernandez/puid"
+keywords = ["uuid", "prefix", "id", "random"]
+license = "MIT"
+readme = "README.md"
+repository="https://github.com/aitorfernandez/puid.git"
 
 [dependencies]
 rand = { version = "0.8.5", features = ["small_rng"] }
