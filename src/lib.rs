@@ -1,4 +1,4 @@
-//! A unique ID generator using a given prefix `ch_`-style.
+//! A unique ID generator using a given prefix with `ch_`-style.
 //!
 //! The ID is a composition of:
 //!
@@ -11,7 +11,7 @@
 //!
 //! # Examples
 //!
-//! ## Usign the default random length
+//! ## Using the default random length
 //!
 //! ```rust
 //! use puid::puid;
@@ -21,7 +21,7 @@
 //! }
 //! ```
 //!
-//! ## Usign custom random length
+//! ## Using custom random length
 //!
 //! ```rust
 //! use puid::puid;
@@ -53,7 +53,7 @@ fn to_base36(mut v: u128) -> String {
     chars.into_iter().rev().collect()
 }
 
-// Randomly generates a string of given elements length in the range of alphanumeric characters.
+// Randomly generates a string of given length in the range of alphanumeric characters.
 fn rnd_string(elements: usize) -> String {
     thread_rng()
         .sample_iter(&Alphanumeric)
@@ -62,7 +62,7 @@ fn rnd_string(elements: usize) -> String {
         .collect()
 }
 
-// Returns the COUNTER value or reset it if reach the maximum value
+// Returns the COUNTER value or reset it if it reaches the maximum value.
 fn counter() -> u8 {
     COUNTER
         .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |i| match i {
@@ -72,7 +72,7 @@ fn counter() -> u8 {
         .unwrap()
 }
 
-// Returns the total number of whole miliseconds from Unix epoch
+// Returns the total number of whole milliseconds from Unix epoch.
 fn time() -> u128 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -80,7 +80,7 @@ fn time() -> u128 {
         .as_millis()
 }
 
-// Validates that the given string be between 1 and 5 characters and be alphanumeric characters.
+// Validates the given string, between 1 and 4 characters and only alphanumeric characters.
 fn validate(pref: &str) -> bool {
     match pref.chars().count() {
         1..=4 => pref.chars().all(|c| c.is_ascii_alphanumeric()),
@@ -93,7 +93,7 @@ fn validate(pref: &str) -> bool {
 pub fn puid(pref: &str, elements: usize) -> String {
     assert!(
         validate(pref),
-        "Prefix cannot be longer than 4 characters and with non-alphanumeric characters"
+        "Prefix cannot be longer than 4 characters and with non-alphanumeric characters."
     );
 
     [
@@ -107,19 +107,17 @@ pub fn puid(pref: &str, elements: usize) -> String {
     .concat()
 }
 
-/// Abstract the ID generation for easy use...
+/// Abstract the ID generation for easy usage.
 ///
-/// The two flavours
+/// With default size of 12 random characters at the end.
 ///
-/// # Default
-///
-/// ```rust,ignore
+/// ```rust
 /// puid::puid!("foo");
 /// ```
 ///
-/// # With custom random length
+/// With custom size of 24 random characters at the end.
 ///
-/// ```rust,ignore
+/// ```rust
 /// puid::puid!("bar", 24);
 /// ```
 #[macro_export]
