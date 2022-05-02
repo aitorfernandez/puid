@@ -1,3 +1,39 @@
+//! A unique ID generator using a given prefix `ch_`-style.
+//!
+//! The ID is a composition of:
+//!
+//! - Prefix.
+//! - Underscore character.
+//! - Timestamp turned into Base-36.
+//! - A u8 type counter.
+//! - The OS-assigned process identifier turned into Base-36.
+//! - Sequence the random characters.
+//!
+//! # Examples
+//!
+//! ## Usign the default random length
+//!
+//! ```rust
+//! use puid::puid;
+//!
+//! fn main() {
+//!     let id = puid!("foo"); // foo_l2ok01bl0yq2i2ElC7zWaCR8
+//! }
+//! ```
+//!
+//! ## Usign custom random length
+//!
+//! ```rust
+//! use puid::puid;
+//!
+//! fn main() {
+//!     let id = puid!("bar", 24); // bar_l2ok1yvk1z4aOz1P7kecCTaqUGq1wgKfHGZC
+//! }
+//! ```
+
+#![doc(html_root_url = "https://docs.rs/puid")]
+#![warn(missing_docs)]
+
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use std::{
     sync::atomic::{AtomicU8, Ordering},
@@ -7,6 +43,7 @@ use std::{
 static BASE_36: u8 = 36;
 static COUNTER: AtomicU8 = AtomicU8::new(0);
 
+// Convert the given unsigned value to a string of Base-36.
 fn to_base36(mut v: u128) -> String {
     let mut chars = vec![];
     while v > 0 {
@@ -16,6 +53,7 @@ fn to_base36(mut v: u128) -> String {
     chars.into_iter().rev().collect()
 }
 
+// Randomly generates a string of given elements length in the range of alphanumeric characters.
 fn rnd_string(elements: usize) -> String {
     thread_rng()
         .sample_iter(&Alphanumeric)
@@ -24,6 +62,7 @@ fn rnd_string(elements: usize) -> String {
         .collect()
 }
 
+// Returns the COUNTER value or reset it if reach the maximum value
 fn counter() -> u8 {
     COUNTER
         .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |i| match i {
@@ -33,6 +72,7 @@ fn counter() -> u8 {
         .unwrap()
 }
 
+// Returns the total number of whole miliseconds from Unix epoch
 fn time() -> u128 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -40,6 +80,7 @@ fn time() -> u128 {
         .as_millis()
 }
 
+// Validates that the given string be between 1 and 5 characters and be alphanumeric characters.
 fn validate(pref: &str) -> bool {
     match pref.chars().count() {
         1..=4 => pref.chars().all(|c| c.is_ascii_alphanumeric()),
@@ -47,6 +88,8 @@ fn validate(pref: &str) -> bool {
     }
 }
 
+#[doc(hidden)]
+// Composes the different parts of the ID.
 pub fn puid(pref: &str, elements: usize) -> String {
     assert!(
         validate(pref),
@@ -64,12 +107,29 @@ pub fn puid(pref: &str, elements: usize) -> String {
     .concat()
 }
 
+/// Abstract the ID generation for easy use...
+///
+/// The two flavours
+///
+/// # Default
+///
+/// ```rust,ignore
+/// puid::puid!("foo");
+/// ```
+///
+/// # With custom random length
+///
+/// ```rust,ignore
+/// puid::puid!("bar", 24);
+/// ```
 #[macro_export]
 macro_rules! puid {
+    // Default puid with size of 12 random characters at the end.
     ($pref:expr) => {
         $crate::puid($pref, 12)
     };
 
+    // puid with custom size of random characters at the end.
     ($pref:expr, $elements:expr) => {
         $crate::puid($pref, $elements)
     };
@@ -78,7 +138,9 @@ macro_rules! puid {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use std::collections::HashMap;
+    use std::thread;
 
     #[test]
     fn validate_test() {
@@ -113,9 +175,11 @@ mod tests {
     fn counter_test() {
         let a = counter(); // 0
         let b = counter();
-        for _ in b + 1..=u8::MAX {
-            let _ = counter();
-        }
+        let _ = thread::spawn(move || {
+            for _ in b + 1..=u8::MAX {
+                let _ = counter();
+            }
+        });
         assert!(a + 1 == b);
         assert_eq!(counter(), 0);
     }
