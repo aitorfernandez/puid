@@ -33,8 +33,7 @@
 
 #![doc(html_root_url = "https://docs.rs/puid")]
 #![warn(missing_docs)]
-
-#[allow(deprecated)]
+#![allow(deprecated)]
 
 /// The Puid module.
 mod puid;
