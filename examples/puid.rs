@@ -6,7 +6,7 @@ fn main() -> Result<(), PuidError> {
     println!("{id}");
 
     // id with prefix bar_ and custom entropy of 24 random characters at the end.
-    let id = Puid::builder().prefix("foo")?.entropy(24).build()?;
+    let id = Puid::builder().prefix("bar")?.entropy(24).build()?;
     println!("{id}");
 
     Ok(())

@@ -8,7 +8,7 @@ use std::{
 static BASE_36: u8 = 36;
 static COUNTER: AtomicU8 = AtomicU8::new(0);
 
-/// ...
+/// A builder struct for constructing puids.
 #[derive(Debug, Default)]
 pub struct PuidBuilder<'a> {
     entropy: usize,
@@ -16,7 +16,7 @@ pub struct PuidBuilder<'a> {
 }
 
 impl<'a> PuidBuilder<'a> {
-    /// ....
+    /// Start building a puid with default entropy.
     pub fn new() -> Self {
         Self {
             entropy: 12,
@@ -24,7 +24,7 @@ impl<'a> PuidBuilder<'a> {
         }
     }
 
-    /// ...
+    /// Add the puid prefix.
     pub fn prefix(self, prefix: &'a str) -> PuidResult<Self> {
         if validate(prefix) {
             Ok(Self { prefix, ..self })
@@ -33,12 +33,12 @@ impl<'a> PuidBuilder<'a> {
         }
     }
 
-    /// ...
+    /// Add the custom entropy.
     pub fn entropy(self, entropy: usize) -> Self {
         Self { entropy, ..self }
     }
 
-    /// ...
+    /// Generate a string puid.
     pub fn build(self) -> PuidResult<String> {
         if self.prefix.is_empty() {
             Err(PuidError::InvalidPrefix)
@@ -56,11 +56,11 @@ impl<'a> PuidBuilder<'a> {
     }
 }
 
-/// ...
+/// The exposed struct for generate Puids.
 pub struct Puid;
 
 impl Puid {
-    /// ...
+    /// Exposed method to use the builder.
     pub fn builder() -> PuidBuilder<'static> {
         PuidBuilder::new()
     }
@@ -103,10 +103,10 @@ fn time() -> u128 {
         .as_millis()
 }
 
-// Validates the given string, between 1 and 4 characters and only alphanumeric characters.
+// Validates the given string, between 1 and 8 characters and only alphanumeric characters.
 fn validate(pref: &str) -> bool {
     match pref.chars().count() {
-        1..=4 => pref.chars().all(|c| c.is_ascii_alphanumeric()),
+        1..=8 => pref.chars().all(|c| c.is_ascii_alphanumeric()),
         _ => false,
     }
 }

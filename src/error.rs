@@ -1,18 +1,18 @@
-/// Error type for puid.
+/// Types for working with errors produced by Puid.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum PuidError {
-    /// The prefix has an invalid format.
+    /// Error occurred when the prefix has an invalid format or empty.
     InvalidPrefix,
 }
 
-/// ...
+/// A `Result` alias type for Puid.
 pub type PuidResult<T> = Result<T, PuidError>;
 
 impl std::fmt::Display for PuidError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             PuidError::InvalidPrefix => {
-                write!(f, "Prefix cannot be longer than 4 characters and with non-alphanumeric characters.")
+                write!(f, "Prefix cannot be longer than 8 characters with non-alphanumeric characters or non empty.")
             }
         }
     }
@@ -29,7 +29,7 @@ mod tests {
         let err = PuidError::InvalidPrefix;
         assert_eq!(
             err.to_string(),
-            "Prefix cannot be longer than 4 characters and with non-alphanumeric characters."
+            "Prefix cannot be longer than 8 characters with non-alphanumeric characters or non empty."
         )
     }
 }

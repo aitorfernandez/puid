@@ -19,7 +19,7 @@ The ID is a composition of:
 use puid::puid;
 
 fn main() {
-    let id = puid!("foo"); // foo_l2ok01bl0yq2i2ElC7zWaCR8
+  let id = Puid::builder().prefix("foo").unwrap().build().unwrap(); // foo_l2ok01bl0yq2i2ElC7zWaCR8
 }
 ```
 
@@ -29,6 +29,6 @@ fn main() {
 use puid::puid;
 
 fn main() {
-    let id = puid!("bar", 24); // bar_l2ok1yvk1z4aOz1P7kecCTaqUGq1wgKfHGZC
+  let id = Puid::builder().prefix("bar").unwrap().entropy(24).build().unwrap(); // bar_l2ok1yvk1z4aOz1P7kecCTaqUGq1wgKfHGZC
 }
 ```
