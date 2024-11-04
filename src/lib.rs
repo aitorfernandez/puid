@@ -18,14 +18,12 @@
 //! ```rust
 //! use puid::Puid;
 //!
-//! fn main() {
-//!     let id = Puid::builder()
-//!         .prefix("foo")
-//!         .unwrap()
-//!         .build()
-//!         .unwrap();
-//!     // Example output: "foo_l2ok01bl0yq2i2ElC7zWaCR8"
-//! }
+//! let id = Puid::builder()
+//!     .prefix("foo")
+//!     .unwrap()
+//!     .build()
+//!     .unwrap();
+//! // Example output: "foo_l2ok01bl0yq2i2ElC7zWaCR8"
 //! ```
 //!
 //! ## Using a custom random sequence length
@@ -33,15 +31,13 @@
 //! ```rust
 //! use puid::Puid;
 //!
-//! fn main() {
-//!     let id = Puid::builder()
-//!         .prefix("bar")
-//!         .unwrap()
-//!         .entropy(24)
-//!         .build()
-//!         .unwrap();
-//!     // Example output: "bar_l2ok1yvk1z4aOz1P7kecCTaqUGq1wgKfHGZC"
-//! }
+//! let id = Puid::builder()
+//!     .prefix("bar")
+//!     .unwrap()
+//!     .entropy(24)
+//!     .build()
+//!     .unwrap();
+//! // Example output: "bar_l2ok1yvk1z4aOz1P7kecCTaqUGq1wgKfHGZC"
 //! ```
 //!
 //! # Error Handling
@@ -58,4 +54,4 @@ mod puid;
 pub use crate::puid::{puid, Puid};
 
 /// The type error.
-pub mod error;
+pub mod errors;

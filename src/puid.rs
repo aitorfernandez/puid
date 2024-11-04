@@ -1,11 +1,11 @@
-use crate::error::{PuidError, PuidResult};
+use crate::errors::{PuidError, PuidResult};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use std::{
     sync::atomic::{AtomicU8, Ordering},
     time::{SystemTime, UNIX_EPOCH},
 };
 
-// shared state that requires a stable memory location
+// Shared state that requires a stable memory location
 static COUNTER: AtomicU8 = AtomicU8::new(0);
 
 const BASE_36: u8 = 36;
@@ -18,12 +18,14 @@ pub struct Puid;
 
 impl Puid {
     /// Exposed method to use the builder.
+    #[must_use]
     pub fn builder() -> PuidBuilder<'static> {
         PuidBuilder::new()
     }
 }
 
 /// A builder struct for constructing puids.
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Default)]
 pub struct PuidBuilder<'a> {
     entropy: u8,
@@ -74,7 +76,7 @@ impl<'a> PuidBuilder<'a> {
         result.push('_');
         result.push_str(&to_base36(time()));
         result.push_str(&counter().to_string());
-        result.push_str(&to_base36(std::process::id() as u128));
+        result.push_str(&to_base36(u128::from(std::process::id())));
         result.push_str(&rnd_string(self.entropy));
 
         Ok(result)
@@ -86,8 +88,14 @@ fn to_base36(mut v: u128) -> String {
     // 16 characters cover most cases which is typical for base-36 encoding of a u128
     let mut result = String::with_capacity(16);
     while v > 0 {
-        result.push(char::from_digit((v % BASE_36 as u128) as u32, BASE_36 as u32).unwrap());
-        v /= BASE_36 as u128;
+        result.push(
+            char::from_digit(
+                u32::try_from(v % u128::from(BASE_36)).unwrap(),
+                u32::from(BASE_36),
+            )
+            .unwrap(),
+        );
+        v /= u128::from(BASE_36);
     }
     result.chars().rev().collect()
 }
@@ -101,7 +109,7 @@ fn rnd_string(elements: u8) -> String {
         .collect()
 }
 
-/// Increments and fetches an atomic counter, resetting to 0 upon reaching u8::MAX.
+/// Increments and fetches an atomic counter, resetting to 0 upon reaching `u8::MAX`.
 fn counter() -> u8 {
     COUNTER
         .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |i| match i {
@@ -127,6 +135,7 @@ fn validate(prefix: &str) -> bool {
 
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Deprecated in favour of Puid::builder()")]
+#[allow(clippy::must_use_candidate)]
 // Composes the different parts of the ID.
 pub fn puid(pref: &str, elements: u8) -> String {
     assert!(
@@ -139,7 +148,7 @@ pub fn puid(pref: &str, elements: u8) -> String {
         "_",
         &to_base36(time()),
         &counter().to_string(),
-        &to_base36(std::process::id() as u128),
+        &to_base36(u128::from(std::process::id())),
         &rnd_string(elements),
     ]
     .concat()
@@ -163,7 +172,7 @@ pub fn puid(pref: &str, elements: u8) -> String {
 macro_rules! puid {
     // Default puid with size of 12 random characters at the end.
     ($pref:expr) => {
-        $crate::puid($pref, 12)
+        $crate::puid($pref, DEFAULT_ENTROPY)
     };
 
     // puid with custom size of random characters at the end.
