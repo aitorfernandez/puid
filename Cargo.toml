@@ -13,3 +13,10 @@ repository = "https://github.com/aitorfernandez/puid.git"
 
 [dependencies]
 rand = { version = "0.8.5", features = ["small_rng"] }
+
+[[bench]]
+name = "puid"
+harness = false
+
+[dev-dependencies]
+criterion = "0.5"

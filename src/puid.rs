@@ -172,7 +172,7 @@ pub fn puid(pref: &str, elements: u8) -> String {
 macro_rules! puid {
     // Default puid with size of 12 random characters at the end.
     ($pref:expr) => {
-        $crate::puid($pref, DEFAULT_ENTROPY)
+        $crate::puid($pref, 12)
     };
 
     // puid with custom size of random characters at the end.
